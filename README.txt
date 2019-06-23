@@ -1,38 +1,44 @@
-����O����97.2���Afun�Bname_fun�����ô���S�L�A���ڦ��y�L�ץ��F�@��bug�ѤU�N�ݧA�̤F
+使用環境linux ubuntu 64bit
 
-�ϥ�����linux ubuntu 64bit
+---用lex跟yacc簡單的直譯器---
+功能
+1. 可宣告變數
+2. 四則運算
+3. 可以if
+4. 可以lambdafunction
+5. 定義named fuction
 
-lex�ɪ�����---------------------------
-�ڧ� �Ʀrreturn NUMBER
-�ڧ� #t #freturn BOOL
-�H�Ψ�L�H���w�q���r����^�ǧڷQ�n����
-�̫��ID������return�^�h�A
-�ӪŮ�򴫦橿�����C
-�ѤU���r�����D�k�r���|��Xunexpected character�r��
+lex檔的部分---------------------------
+我把 數字return NUMBER
+我把 #t #freturn BOOL
+以及其他人為定義的字串先回傳我想要的值
+最後把ID的部分return回去，
+而空格跟換行忽略掉。
+剩下的字元為非法字元會輸出unexpected character字樣
 --------------------------------------
 
-yacc�ɪ�����--------------------------
-�Ҧ���exp�ڳ��Φs��@��binary tree�̭�
+yacc檔的部分--------------------------
+所有的exp我都用存到一個binary tree裡面
 
-tree��node���|���@��type�O���L�O����operater�άOnumber�άOvariable�A
-�p�G�Onumber�A�L��value�N�|�O���L����;�p�G�Ovariable�A�L��name�N�|�O���L���W�r
-1.�J��@��operation�ɥL���W�h�N�O(op exp exps) �� (op exp) �N�⥪�k�p�ĩ񦨥��kexp�s��tree�A�ۤv�N�Oop
-2.��¹J��ID�ɴN�ۤv�Ovariable�A���k�p�Ĭ���
-3.��¹J��NUMBER�ɴN�ۤv�Onumber�A���k�p�Ĭ���
-4.����exps�i�H�i�}�A�ڱN���̤������Poperator��exp�A�N�i�H�ھڤ��P��operator�гynode
-5.�̫�C�ӿW��exp��exp���|�ܦ��@��tree
-6.����ݭn����exp���ȮɡA�ڤ~�|call EvalueTree(exp)�A���覡��X�ȡA��²�檺DFS�N�i�H��X�ӤF�C
+tree的node都會有一個type記錄他是哪個operater或是number或是variable，
+如果是number，他的value就會記錄他的值;如果是variable，他的name就會記住他的名字
+1.遇到一個operation時他的規則就是(op exp exps) 或 (op exp) 就把左右小孩放成左右exp存的tree，自己就是op
+2.單純遇到ID時就自己是variable，左右小孩為空
+3.單純遇到NUMBER時就自己是number，左右小孩為空
+4.有些exps可以展開，我將它們分成不同operator的exp，就可以根據不同的operator創造node
+5.最後每個獨立exp的exp都會變成一個tree
+6.直到需要那個exp的值時，我才會call EvalueTree(exp)，的方式算出值，用簡單的DFS就可以算出來了。
 
-�x�s�ܼƪ��覡�s���ܼ�ID�i�ӮɡA�ڴN���L�@��va[vsp]���䤤�@��vsp����l
-�bdef_stmt�ɡA�|���ڷ|exp���Ⱥ�X�ӡA�H�ζ��K��exp�s�b�ӦW�r�̭��A�H�Ƥ���ϥθӦW�r�C
-���ڦ��W�r�ɡA�ڥ�get_vsp(ID)�N�i�H���D�L��vsp�C
+儲存變數的方式新的變數ID進來時，我就給他一個va[vsp]的其中一個vsp的位子
+在def_stmt時，會有我會exp的值算出來，以及順便把exp存在該名字裡面，以備之後使用該名字。
+當我有名字時，我用get_vsp(ID)就可以知道他的vsp。
 
-if�������N�O�|����Xtest_exp���ȡA�b��ܭn�Nthen_exp��else_exp�ǤU�h�A�̫�N�ݥL���y�ƤF�C
+if的部分就是會先算出test_exp的值，在選擇要將then_exp或else_exp傳下去，最後就看他的造化了。
 
-�bfunction�������A�p�G�S��parameter�A�ڪ�fun_exp�N�٬O��ڨ���exp�ǤU�h�A
-�p�G���A�N��i�htree���A������ܼƪ��a�賣����������parameter�A
-�p�G�Ofun_name�������A�ڴN�hva[vsp]�A��������exp�A�A�ھڦ��S��parameter���������B�z
+在function的部分，如果沒有parameter，我的fun_exp就還是把我那個exp傳下去，
+如果有，就把進去tree內，把對應變數的地方都換成對應的parameter，
+如果是fun_name的部分，我就去va[vsp]，找到對應的exp，再根據有沒有parameter做對應的處理
 
-error�������ڦۤv�g�Ferror��function�A�i�D�ϥΪ�error���F��O���ӡA
-�b�C��operation���w�q���A�]�g�F�p�G�֤Fexp��error�N�i�H�P�_�X�ӤF
+error的部分我自己寫了error的function，告訴使用者error的東西是哪個，
+在每個operation的定義中，也寫了如果少了exp的error就可以判斷出來了
 --------------------------------------
