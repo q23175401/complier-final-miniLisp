@@ -34,5 +34,5 @@ digit  [0-9]
 .                                           {printf("Unexpected Character! %s\n",yytext); exit(1);}
 %%
 int yywrap(void){
-return 1;
+    return 1;
 }
